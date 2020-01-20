@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+    <title>zchen393</title>
+<script src="../lib/d3.v3.min.js"></script>
+<style>
+
+body {
+    font: 11px sans-serif;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+.dot {
+    stroke: #000;
+}
+
+.tooltip {
+    position: absolute;
+    width: 200px;
+    height: 28px;
+    pointer-events: none;
+}
+
+.pagebreak { page-break-before: always; }
+</style>
+<div id="a1"></div>
+<div class="pagebreak"> </div>
+<div id="a2"></div>
+<div class="pagebreak"> </div>
+<div id="a3"></div>
+<div class="pagebreak"> </div>
+<div id="a4"></div>
+<div class="pagebreak"> </div>
+<div id="a5"></div>
+<body>
+<script type="text/javascript">
+
+var margin = {top: 20, right: 20, bottom: 30, left: 70},
+width = 1060 - margin.left - margin.right,
+height = 500 - margin.top - margin.bottom;
+  
+
+
+var svg = d3.select("#a1").append("svg")
+.attr("width", width + margin.left + margin.right)
+.attr("height", height + margin.top + margin.bottom)
+.append("g")
+.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+// load data
+d3.csv("movies.csv", function(error, data) {
+       
+       // setup x
+       var xValue = function(d) { return d["imdbRating"];;}, // data -> value
+       xScale = d3.scale.linear().range([0, width]), // value -> display
+       xMap = function(d) { return xScale(xValue(d));}, // data -> display
+       xAxis = d3.svg.axis().scale(xScale).orient("bottom");
+       
+       // setup y
+       var yValue = function(d) { return d["WinsNoms"];}, // data -> value
+       yScale = d3.scale.linear().range([height, 0]), // value -> display
+       yMap = function(d) { return yScale(yValue(d));}, // data -> display
+       yAxis = d3.svg.axis().scale(yScale).orient("left");
+       
+       data.forEach(function(d) {
+                    d["imdbRating"] = +d["imdbRating"];
+                    d["WinsNoms"] = +d["WinsNoms"]
+                    d["IsGoodRating"] = +d["IsGoodRating"];
+                    });
+       
+       xScale.domain([d3.min(data, xValue)-1, d3.max(data, xValue)+1]);
+       yScale.domain([d3.min(data, yValue)-1, d3.max(data, yValue)+1]);
+       
+       // x-axis
+       svg.append("g")
+       .attr("class", "x axis")
+       .attr("transform", "translate(0," + height + ")")
+       .call(xAxis)
+       .append("text")
+       .attr("class", "label")
+       .attr("x", width)
+       .attr("y", -6)
+       .style("text-anchor", "end")
+       .text("IMDb Rating");
+       
+       // y-axis
+       svg.append("g")
+       .attr("class", "y axis")
+       .call(yAxis)
+       .append("text")
+       .attr("class", "label")
+       .attr("transform", "rotate(-90)")
+       .attr("y", 6)
+       .attr("dy", ".71em")
+       .style("text-anchor", "end")
+       .text("Wins+Noms");
+       
+       // draw dots
+       point = svg.selectAll(".dot")
+       .data(data)
+       .enter().append("g")
+       .attr("class", "point");
+       
+       point.append("path")
+       .attr("d", function(d){
+             if (d["IsGoodRating"] == 1) {
+             return d3.svg.symbol().type("cross")();
+             } else {
+             return d3.svg.symbol().type("circle")();
+             }
+             } )
+       .attr('fill', "transparent")
+       .attr("stroke", function(d){
+                       if (d["IsGoodRating"] == 1) {
+                       return "blue";
+                       } else {
+                       return "red";
+                       }
+                       })
+        .attr("transform", function(d) { return "translate(" + xMap(d) + "," + yMap(d) + ")"; });
+       
+       // setup fill color
+       var z = d3.scale.category20c();
+       
+       var legend = svg.selectAll(".legend")
+       .data(data)
+       .enter().append("g")
+       .attr("class", "legend")
+       .attr("transform", function(d) { return "translate(900," + d["IsGoodRating"] * 15 + ")"; });
+       
+       legend.append("path")
+       .attr("d", function(d){
+             if (d["IsGoodRating"] == 1) {
+             return d3.svg.symbol().type("cross")();
+             } else {
+             return d3.svg.symbol().type("circle")();
+             }
+             } )
+       .attr("x", 0)
+       .attr("width", 10)
+       .attr("height", 10)
+       .attr('fill', "transparent")
+       .attr("stroke", function(d){
+             if (d["IsGoodRating"] == 1) {
+             return "blue";
+             } else {
+             return "red";
+             }
+             })
+       
+       legend.append("text")
+       .attr("x", 10)
+       .attr("y", 5)
+       .attr("dy", ".15em")
+       .style("text-anchor", "start")
+       .text(function(d) {
+             if (d["IsGoodRating"] == 1) {
+             return "good rating";
+             } else {
+             return "bad rating";
+             }
+             });
+       
+       //Create title
+       svg.append("text")
+       .text("Wins+Nominations vs. IMDb Rating")
+       .attr("x", 400)
+       .attr("y", 0)
+       .attr("font-family","sans-serif")
+       .attr("font-size","13px")
+       .attr("font-weight","bold");
+       
+});
+
+
+// add the graph canvas to the body of the webpage
+var svg1 = d3.select("#a2").append("svg")
+.attr("width", width + margin.left + margin.right)
+.attr("height", height + margin.top + margin.bottom)
+.append("g")
+.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+d3.csv("movies.csv", function(error, data) {
+       
+       // setup x
+       var xValue = function(d) { return d["imdbRating"];;}, // data -> value
+       xScale = d3.scale.linear().range([0, width]), // value -> display
+       xMap = function(d) { return xScale(xValue(d));}, // data -> display
+       xAxis = d3.svg.axis().scale(xScale).orient("bottom");
+       
+       // setup y
+       var yValue = function(d) { return d["Budget"];}, // data -> value
+       yScale = d3.scale.linear().range([height, 0]), // value -> display
+       yMap = function(d) { return yScale(yValue(d));}, // data -> display
+       yAxis = d3.svg.axis().scale(yScale).orient("left");
+       
+
+       data.forEach(function(d) {
+                    d["imdbRating"] = +d["imdbRating"];
+                    d["Budget"] = +d["Budget"]
+                    d["IsGoodRating"] = +d["IsGoodRating"];
+                    });
+       
+
+       xScale.domain([d3.min(data, xValue)-1, d3.max(data, xValue)+1]);
+       yScale.domain([d3.min(data, yValue)-1, d3.max(data, yValue)+1]);
+       
+       // x-axis
+       svg1.append("g")
+       .attr("class", "x axis")
+       .attr("transform", "translate(0," + height + ")")
+       .call(xAxis)
+       .append("text")
+       .attr("class", "label")
+       .attr("x", width)
+       .attr("y", -6)
+       .style("text-anchor", "end")
+       .text("IMDb Rating");
+       
+       // y-axis
+       svg1.append("g")
+       .attr("class", "y axis")
+       .call(yAxis)
+       .append("text")
+       .attr("class", "label")
+       .attr("transform", "rotate(-90)")
+       .attr("y", 6)
+       .attr("dy", ".71em")
+       .style("text-anchor", "end")
+       .text("Budget");
+       
+       // draw dots
+       point = svg1.selectAll(".dot")
+       .data(data)
+       .enter().append("g")
+       .attr("class", "point");
+       
+       point.append("path")
+       .attr("d", function(d){
+             if (d["IsGoodRating"] == 1) {
+             return d3.svg.symbol().type("cross")();
+             } else {
+             return d3.svg.symbol().type("circle")();
+             }
+             } )
+       .attr('fill', "transparent")
+       .attr("stroke", function(d){
+             if (d["IsGoodRating"] == 1) {
+             return "blue";
+             } else {
+             return "red";
+             }
+             })
+       .attr("transform", function(d) { return "translate(" + xMap(d) + "," + yMap(d) + ")"; });
+       
+       // setup fill color
+       var z = d3.scale.category20c();
+       
+       var legend = svg1.selectAll(".legend")
+       .data(data)
+       .enter().append("g")
+       .attr("class", "legend")
+       .attr("transform", function(d) { return "translate(900," + d["IsGoodRating"] * 15 + ")"; });
+       
+       legend.append("path")
+       .attr("d", function(d){
+             if (d["IsGoodRating"] == 1) {
+             return d3.svg.symbol().type("cross")();
+             } else {
+             return d3.svg.symbol().type("circle")();
+             }
+             } )
+       .attr("x", 0)
+       .attr("width", 10)
+       .attr("height", 10)
+       .attr('fill', "transparent")
+       .attr("stroke", function(d){
+             if (d["IsGoodRating"] == 1) {
+             return "blue";
+             } else {
+             return "red";
+             }
+             })
+       
+       legend.append("text")
+       .attr("x", 10)
+       .attr("y", 5)
+       .attr("dy", ".15em")
+       .style("text-anchor", "start")
+       .text(function(d) {
+             if (d["IsGoodRating"] == 1) {
+             return "good rating";
+             } else {
+             return "bad rating";
+             }
+             });
+       
+       //Create title
+       svg1.append("text")
+       .text("Budget vs. IMDb Rating")
+       .attr("x", 400)
+       .attr("y", 0)
+       .attr("font-family","sans-serif")
+       .attr("font-size","13px")
+       .attr("font-weight","bold");
+       
+       });
+
+
+var svg2 = d3.select("#a3").append("svg")
+.attr("width", width + margin.left + margin.right)
+.attr("height", height + margin.top + margin.bottom)
+.append("g")
+.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+d3.csv("movies.csv", function(error, data) {
+       
+       // setup x
+       var xValue = function(d) { return d["imdbRating"];;}, // data -> value
+       xScale = d3.scale.linear().range([0, width]), // value -> display
+       xMap = function(d) { return xScale(xValue(d));}, // data -> display
+       xAxis = d3.svg.axis().scale(xScale).orient("bottom");
+       
+       // setup y
+       var yValue = function(d) { return d["imdbVotes"];}, // data -> value
+       yScale = d3.scale.linear().range([height, 0]), // value -> display
+       yMap = function(d) { return yScale(yValue(d));}, // data -> display
+       yAxis = d3.svg.axis().scale(yScale).orient("left");
+       
+       // change string (from CSV) into number format
+       data.forEach(function(d) {
+                    d["imdbRating"] = +d["imdbRating"];
+                    d["imdbVotes"] = +d["imdbVotes"]
+                    d["IsGoodRating"] = +d["IsGoodRating"]
+                    d["WinsNoms"] = +d["WinsNoms"];
+                    });
+       
+       // don't want dots overlapping axis, so add in buffer to data domain
+       xScale.domain([d3.min(data, xValue)-1, d3.max(data, xValue)+1]);
+       yScale.domain([d3.min(data, yValue)-1, d3.max(data, yValue)+1]);
+       
+       // x-axis
+       svg2.append("g")
+       .attr("class", "x axis")
+       .attr("transform", "translate(0," + height + ")")
+       .call(xAxis)
+       .append("text")
+       .attr("class", "label")
+       .attr("x", width)
+       .attr("y", -6)
+       .style("text-anchor", "end")
+       .text("IMDb Rating");
+       
+       // y-axis
+       svg2.append("g")
+       .attr("class", "y axis")
+       .call(yAxis)
+       .append("text")
+       .attr("class", "label")
+       .attr("transform", "rotate(-90)")
+       .attr("y", 6)
+       .attr("dy", ".71em")
+       .style("text-anchor", "end")
+       .text("IMDb Votes");
+       
+       // draw dots
+       point = svg2.selectAll(".dot")
+       .data(data)
+       .enter().append("g")
+       .attr("class", "point");
+       
+       point.append("path")
+       .attr("d", function(d){
+             if (d["IsGoodRating"] == 1) {
+             return d3.svg.symbol().size(d["WinsNoms"]).type("cross")();
+             } else {
+             return d3.svg.symbol().size(d["WinsNoms"]).type("circle")();
+             }
+             } )
+       .attr('fill', "transparent")
+       .attr("stroke", function(d){
+             if (d["IsGoodRating"] == 1) {
+             return "blue";
+             } else {
+             return "red";
+             }
+             })
+       .attr("transform", function(d) { return "translate(" + xMap(d) + "," + yMap(d) + ")"; });
+       
+       // setup fill color
+       var z = d3.scale.category20c();
+       
+       var legend = svg2.selectAll(".legend")
+       .data(data)
+       .enter().append("g")
+       .attr("class", "legend")
+       .attr("transform", function(d) { return "translate(900," + d["IsGoodRating"] * 15 + ")"; });
+       
+       legend.append("path")
+       .attr("d", function(d){
+             if (d["IsGoodRating"] == 1) {
+             return d3.svg.symbol().type("cross")();
+             } else {
+             return d3.svg.symbol().type("circle")();
+             }
+             } )
+       .attr("x", 0)
+       .attr("width", 10)
+       .attr("height", 10)
+       .attr('fill', "transparent")
+       .attr("stroke", function(d){
+             if (d["IsGoodRating"] == 1) {
+             return "blue";
+             } else {
+             return "red";
+             }
+             })
+       
+       legend.append("text")
+       .attr("x", 10)
+       .attr("y", 5)
+       .attr("dy", ".15em")
+       .style("text-anchor", "start")
+       .text(function(d) {
+             if (d["IsGoodRating"] == 1) {
+             return "good rating";
+             } else {
+             return "bad rating";
+             }
+             });
+       
+       //Create title
+       svg2.append("text")
+       .text("Votes vs. IMDb Rating sized by Wins+Nominations")
+       .attr("x", 350)
+       .attr("y", 0)
+       .attr("font-family","sans-serif")
+       .attr("font-size","13px")
+       .attr("font-weight","bold");
+       
+       });
+
+
+var svg3 = d3.select("#a4").append("svg")
+.attr("width", width + margin.left + margin.right)
+.attr("height", height + margin.top + margin.bottom)
+.append("g")
+.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+d3.csv("movies.csv", function(error, data) {
+       
+       // setup x
+       var xValue = function(d) { return d["imdbRating"];;}, // data -> value
+       xScale = d3.scale.linear().range([0, width]), // value -> display
+       xMap = function(d) { return xScale(xValue(d));}, // data -> display
+       xAxis = d3.svg.axis().scale(xScale).orient("bottom");
+       
+       // setup y
+       var yValue = function(d) { return d["WinsNoms"];}, // data -> value
+       yScale = d3.scale.sqrt().range([height, 0]), // value -> display
+       yMap = function(d) { return yScale(yValue(d));}, // data -> display
+       yAxis = d3.svg.axis().scale(yScale).orient("left");
+       
+       // change string (from CSV) into number format
+       data.forEach(function(d) {
+                    d["imdbRating"] = +d["imdbRating"];
+                    d["IsGoodRating"] = +d["IsGoodRating"]
+                    d["WinsNoms"] = +d["WinsNoms"];
+                    });
+       
+       // don't want dots overlapping axis, so add in buffer to data domain
+       xScale.domain([d3.min(data, xValue)-1, d3.max(data, xValue)+1]);
+       yScale.domain([d3.min(data, yValue)-1, d3.max(data, yValue)+1]);
+       
+       // x-axis
+       svg3.append("g")
+       .attr("class", "x axis")
+       .attr("transform", "translate(0," + height + ")")
+       .call(xAxis)
+       .append("text")
+       .attr("class", "label")
+       .attr("x", width)
+       .attr("y", -6)
+       .style("text-anchor", "end")
+       .text("IMDb Rating");
+       
+       // y-axis
+       svg3.append("g")
+       .attr("class", "y axis")
+       .call(yAxis)
+       .append("text")
+       .attr("class", "label")
+       .attr("transform", "rotate(-90)")
+       .attr("y", 6)
+       .attr("dy", ".71em")
+       .style("text-anchor", "end")
+       .text("Wins+Noms");
+       
+       // draw dots
+       point = svg3.selectAll(".dot")
+       .data(data)
+       .enter().append("g")
+       .attr("class", "point");
+       
+       point.append("path")
+       .attr("d", function(d){
+             if (d["IsGoodRating"] == 1) {
+             return d3.svg.symbol().type("cross")();
+             } else {
+             return d3.svg.symbol().type("circle")();
+             }
+             } )
+       .attr('fill', "transparent")
+       .attr("stroke", function(d){
+             if (d["IsGoodRating"] == 1) {
+             return "blue";
+             } else {
+             return "red";
+             }
+             })
+       .attr("transform", function(d) { return "translate(" + xMap(d) + "," + yMap(d) + ")"; });
+       
+       // setup fill color
+       var z = d3.scale.category20c();
+       
+       var legend = svg3.selectAll(".legend")
+       .data(data)
+       .enter().append("g")
+       .attr("class", "legend")
+       .attr("transform", function(d) { return "translate(900," + d["IsGoodRating"] * 15 + ")"; });
+       
+       legend.append("path")
+       .attr("d", function(d){
+             if (d["IsGoodRating"] == 1) {
+             return d3.svg.symbol().type("cross")();
+             } else {
+             return d3.svg.symbol().type("circle")();
+             }
+             } )
+       .attr("x", 0)
+       .attr("width", 10)
+       .attr("height", 10)
+       .attr('fill', "transparent")
+       .attr("stroke", function(d){
+             if (d["IsGoodRating"] == 1) {
+             return "blue";
+             } else {
+             return "red";
+             }
+             })
+       
+       legend.append("text")
+       .attr("x", 10)
+       .attr("y", 5)
+       .attr("dy", ".15em")
+       .style("text-anchor", "start")
+       .text(function(d) {
+             if (d["IsGoodRating"] == 1) {
+             return "good rating";
+             } else {
+             return "bad rating";
+             }
+             });
+       
+       //Create title
+       svg3.append("text")
+       .text("Wins+Nominations (square-root-scaled) vs. IMDb Rating")
+       .attr("x", 300)
+       .attr("y", 0)
+       .attr("font-family","sans-serif")
+       .attr("font-size","13px")
+       .attr("font-weight","bold");
+       
+       });
+
+var svg4 = d3.select("#a5").append("svg")
+.attr("width", width + margin.left + margin.right)
+.attr("height", height + margin.top + margin.bottom)
+.append("g")
+.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+d3.csv("movies.csv", function(error, data) {
+       
+       // setup x
+       var xValue = function(d) { return d["imdbRating"];;}, // data -> value
+       xScale = d3.scale.linear().range([0, width]), // value -> display
+       xMap = function(d) { return xScale(xValue(d));}, // data -> display
+       xAxis = d3.svg.axis().scale(xScale).orient("bottom");
+       
+
+       // setup y
+       
+       var y0Scale = d3.scale.ordinal().domain([0]).range([height]),
+       y0Axis = d3.svg.axis().scale(y0Scale).orient("left");
+       
+       var yValue = function(d) { return d["WinsNoms"];}, // data -> value
+       yScale = d3.scale.log().range([height - 20, 0]), // value -> display
+       yMap = function(d){
+       if (d["WinsNoms"]==0) { return y0Scale(yValue(d));}
+       else {return yScale(yValue(d));};
+       }, // data -> display
+       yAxis = d3.svg.axis().scale(yScale).orient("left").ticks(12,d3.format(".2d"));
+       
+    
+       // change string (from CSV) into number format
+       data.forEach(function(d) {
+                    d["imdbRating"] = +d["imdbRating"];
+                    d["IsGoodRating"] = +d["IsGoodRating"]
+                    d["WinsNoms"] = +d["WinsNoms"];
+                    });
+       
+       // don't want dots overlapping axis, so add in buffer to data domain
+       xScale.domain([d3.min(data, xValue)-1, d3.max(data, xValue)+1]);
+       yScale.domain([1, d3.max(data, yValue)+1]);
+       
+       // x-axis
+       svg4.append("g")
+       .attr("class", "x axis")
+       .attr("transform", "translate(0," + height + ")")
+       .call(xAxis)
+       .append("text")
+       .attr("class", "label")
+       .attr("x", width)
+       .attr("y", -6)
+       .style("text-anchor", "end")
+       .text("IMDb Rating");
+       
+       // y-axis
+       svg4.append("g")
+       .attr("class", "y axis")
+       .call(yAxis)
+       .append("text")
+       .attr("class", "label")
+       .attr("transform", "rotate(-90)")
+       .attr("y", 6)
+       .attr("dy", ".71em")
+       .style("text-anchor", "end")
+       .text("Wins+Noms");
+       
+       
+       svg4.append("g")
+       .attr("class", "y-zero axis")
+       .call(y0Axis);
+       
+       // draw dots
+       point = svg4.selectAll(".dot")
+       .data(data)
+       .enter().append("g")
+       .attr("class", "point");
+       
+       point.append("path")
+       .attr("d", function(d){
+             if (d["IsGoodRating"] == 1) {
+             return d3.svg.symbol().type("cross")();
+             } else {
+             return d3.svg.symbol().type("circle")();
+             }
+             } )
+       .attr('fill', "transparent")
+       .attr("stroke", function(d){
+             if (d["IsGoodRating"] == 1) {
+             return "blue";
+             } else {
+             return "red";
+             }
+             })
+       .attr("transform", function(d) { return "translate(" + xMap(d) + "," + yMap(d) + ")"; });
+       
+       // setup fill color
+       var z = d3.scale.category20c();
+       
+       var legend = svg4.selectAll(".legend")
+       .data(data)
+       .enter().append("g")
+       .attr("class", "legend")
+       .attr("transform", function(d) { return "translate(900," + d["IsGoodRating"] * 15 + ")"; });
+       
+       legend.append("path")
+       .attr("d", function(d){
+             if (d["IsGoodRating"] == 1) {
+             return d3.svg.symbol().type("cross")();
+             } else {
+             return d3.svg.symbol().type("circle")();
+             }
+             } )
+       .attr("x", 0)
+       .attr("width", 10)
+       .attr("height", 10)
+       .attr('fill', "transparent")
+       .attr("stroke", function(d){
+             if (d["IsGoodRating"] == 1) {
+             return "blue";
+             } else {
+             return "red";
+             }
+             })
+       
+       legend.append("text")
+       .attr("x", 10)
+       .attr("y", 5)
+       .attr("dy", ".15em")
+       .style("text-anchor", "start")
+       .text(function(d) {
+             if (d["IsGoodRating"] == 1) {
+             return "good rating";
+             } else {
+             return "bad rating";
+             }
+             });
+       
+       //Create title
+       svg4.append("text")
+       .text("Wins+Nominations (log-scaled) vs. IMDb Rating")
+       .attr("x", 300)
+       .attr("y", 0)
+       .attr("font-family","sans-serif")
+       .attr("font-size","13px")
+       .attr("font-weight","bold");
+       
+       });
+       
+
+</script>
+</body>
+</html>

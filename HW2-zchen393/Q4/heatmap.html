@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="utf-8">
+<title>zchen393</title>
+<script type="text/javascript" src="../lib/d3.v3.min.js"></script>
+<style type="text/css">
+
+
+</style>
+<div id="selector"></div>
+<div id="area1"></div>
+<body>
+	<script type="text/javascript">
+		
+//Width and height
+var margin = {top: 100, right: 20, bottom: 300, left: 150},
+    w = 1000 - margin.left - margin.right,
+    h = 900 - margin.top - margin.bottom,
+    grid = Math.floor(h/7),
+    buckets = 9,
+    colors = ["#fcfbfd",
+              "#efedf5",
+              "#dadaeb",
+              "#bcbddc",
+              "#9e9ac8",
+              "#807dba",
+              "#6a51a3",
+              "#54278f",
+              "#3f007d",]
+    book = ["Sorcerer's Stone","Chamber of Secrets","Prisoner of Azkaban","Goblet of Fire","Order of the Phoenix","Half Blood Prince","Deathly Hallows"],
+    spell_type = ["Charm","Healing Spell","Hex","Counter Spell","Jinx","Curse","Transfiguration","Conjuration"],
+    house = ["Gryffindor","Hufflepuff","Ravenclaw","Slytherin"];
+
+//Create SVG element
+var svg = d3.select("#area1")
+    .append("svg")
+    .attr("width", w + margin.left + margin.right)
+    .attr("height", h + margin.top + margin.bottom);
+
+var map = svg.append("g")
+    .attr("class","heatmap")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+//fucntion to choose which house to display
+var select = d3.select("#area1").append('select')
+    .attr('class','select')
+    .style("position", "absolute")
+    .style("left", w/2-35+"px")
+    .style("top", margin.top/2+"px")
+    .on('change', heatmap);
+
+var options = select.selectAll('option')
+    .data(house).enter()
+    .append('option')
+    .text(function(d) { return d; });
+
+heatmap();
+
+//add label
+svg.append("text")
+    .text("House")
+    .attr("x", w/2-45)
+    .attr("y", margin.top/2+7)
+    .style("font-family","sans-serif")
+    .style("font-size",11)
+    .style("font-weight","bold")
+    .style("text-anchor","end");
+
+svg.append("text")
+    .text("Vizualizing Wizarding Houses and Spells")
+    .attr("x", w/2-45)
+    .attr("y", 18)
+    .style("font-family","sans-serif")
+    .style("font-size",18)
+    .style("font-weight","bold")
+    .style("text-anchor","middle");
+
+var ylabel = map.selectAll(".ylabel")
+    .data(book).enter()
+    .append("text")
+    .text(function(d) { return d;})
+    .attr("class", "ylabel")
+    .attr("x",0)
+    .attr("y", function(d,i) { return i*grid})
+    .style("text-anchor","end")
+    .attr("transform", "translate(-6," + grid / 1.5 + ")")
+
+var xlabel = map.selectAll(".xlabel")
+    .data(spell_type)
+    .enter()
+    .append("text")
+    .text(function(d) { return d;})
+    .attr("class", "xlabel")
+    .attr("x",-h-5)
+    .attr("y", function(d,i) { return (i+0.5)*grid})
+    .style("text-anchor","end")
+    .attr("transform", "rotate(-90)")
+
+map.append("text")
+    .text("Book")
+    .attr("class", "Labels")
+    .style("text-anchor","end")
+    .style("font-weight","bold")
+    .attr("transform", "translate(-6,-6)")
+
+map.append("text")
+    .text("Spell Type")
+    .attr("class", "Labels")
+    .style("font-weight","bold")
+    .attr("transform", "translate(560,520)");
+
+
+//Get the Data
+function heatmap() {
+
+var Name = d3.select('select').property('value')
+d3.csv("./heatmap.csv", function(error,heatmap) {
+    heatmap.forEach(function(d) {
+        d["Sorcerer's Stone"] = +d["Sorcerer's Stone"];
+        d["Chamber of Secrets"] = +d["Chamber of Secrets"];
+        d["Prisoner of Azkaban"] = +d["Prisoner of Azkaban"];
+        d["Goblet of Fire"] = +d["Goblet of Fire"];
+        d["Order of the Phoenix"] = +d["Order of the Phoenix"];
+        d["Half Blood Prince"] = +d["Half Blood Prince"];
+        d["Deathly Hallows"] = +d["Deathly Hallows"];
+    })
+
+var data = heatmap.filter(function(d) { return d.House == Name; });
+
+var reshapeData = [];
+data.forEach(function(d) {
+    Object.keys(d).forEach (function(g) {
+                  if (g =="SpellType" || g=="House") {
+                    return;
+                      }
+                reshapeData.push({"SpellType": spell_type.indexOf(d["SpellType"]), "Book": book.indexOf(g), "Value": d[g]});
+                   })
+    })
+       
+var colorscale  = d3.scale.quantile()
+    .domain([0,buckets-1,d3.max(reshapeData, function(d) { return d.Value; })])
+    .range(colors);
+       
+var legend = svg.selectAll(".legend")
+.data([0].concat(colorscale .quantiles()), function(d) { return d; });
+
+legend.enter().append("g")
+.attr("class", "legend")
+.attr("transform","translate(" + margin.left + "," + (0.8*h+1.2*margin.bottom) + ")");
+
+legend.append("text")
+.attr("class", "legendlabel")
+.text("No. of Spells")
+
+legend.append("rect")
+.attr("x", function(d, i) { return grid*1.2 * i; })
+.attr("y", 10)
+.attr("width", grid*1.2)
+.attr("height", grid / 2)
+.style("fill", function(d, i) { return colors[i]; });
+
+legend.append("text")
+.attr("class", "legendlabel")
+.text(function(d) { return Math.round(d); })
+.attr("x", function(d, i) { return grid*1.2 * i; })
+.attr("y", grid/1.2+10);
+
+legend.exit().remove();
+
+var spellheatmap = map.selectAll(".num")
+    .data(reshapeData);
+
+spellheatmap.enter().append("rect")
+    .attr("x", function(d) { return d.SpellType*grid; })
+    .attr("y", function(d) { return d.Book*grid; })
+    .attr("rx", 4)
+    .attr("ry", 4)
+    .attr("class", "spellheatmap")
+    .attr("width", grid-1)
+    .attr("height", grid-1)
+    .style("fill", colors);
+
+spellheatmap.transition().duration(200)
+    .style("fill", function(d) { return colorscale (d.Value); });
+
+spellheatmap.exit().remove();
+
+
+});
+
+};
+
+
+
+
+
+	</script>
+</body>
+</html>

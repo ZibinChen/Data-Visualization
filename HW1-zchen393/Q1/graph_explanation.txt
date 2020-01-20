@@ -1,0 +1,1 @@
+For compact purpose, filter the nodes with less degree. Then modify the size and the colour of the nodes based on the degree and the modularity. Apply force-Atlas algorithm to arrange the position to avoid the edge crossing and cluster the similar nodes.

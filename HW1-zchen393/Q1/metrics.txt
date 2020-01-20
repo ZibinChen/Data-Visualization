@@ -1,0 +1,8 @@
+Average node degree: 1.523. 
+The average number of edges that attached to one node. It represents the connectivity of graph. The higher the average node degree, the higher connectivity.
+
+Diameter of the graph: 8. 
+The shortest distance of the most distant nodes in the graph. The shortest distance of any nodes can not go beyond this parameter.
+
+Average path length: 2.485. 
+The average length of the shortest distance between each pairs of nodes.

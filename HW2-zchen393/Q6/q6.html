@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="utf-8">
+<title>zchen393</title>
+<script type="text/javascript" src="../lib/d3.v3.min.js"></script>
+<script type="text/javascript" src="../lib/d3.tip.v0.6.3.js"></script>
+<script type="text/javascript" src="../lib/d3-queue.v3.min.js"></script>
+<script type="text/javascript" src="../lib/topojson.v1.min.js"></script>
+<style type="text/css">
+
+.states {
+	fill: none;
+	stroke: #fff;
+	stroke-linejoin: round;
+}
+
+.legend text {
+	font-family: sans-serif;
+	font-size: 12px;
+}
+
+.d3-tip {
+  line-height: 1;
+  font-weight: bold;
+  font-size: 15px;
+  margin: 3px;
+  background: rgba(33,113,181,0.5);
+  color: #fff;
+  border-radius: 8px;
+}
+
+</style>
+<body>
+<script type="text/javascript">
+
+//Width and height
+var width = 1000,
+	height = 600,
+	margin = 50,
+	colorlegend  = {"h": margin/1.5, "w":margin/2};
+
+var color = ["#f7fcfd",
+             "#e5f5f9",
+             "#ccece6",
+             "#99d8c9",
+             "#66c2a4",
+             "#41ae76",
+             "#238b45",
+             "#02818a",
+             "#006d2c",
+             "#00441b"]
+
+var range = d3.range(10,100,10)
+
+var colorScale = d3.scale.threshold()
+.domain(range)
+.range(color);
+
+var path = d3.geo.path();
+
+var svg = d3.select("body")
+	.append("svg")
+	.attr("width", width)
+	.attr("height", height);
+
+svg.append("text")
+	.text("EDUCATION STATISTICS")
+	.attr("x", width/2)
+	.attr("y", margin/2)
+	.style("font-weight","bold")
+	.style("text-anchor","middle");
+
+var map = svg.append("g")
+	.attr("class","map")
+	.attr("transform", "translate("+ margin + "," + margin + ")");
+
+var legend = map.append("g")
+	.attr("class","legend")
+	.attr("transform","translate(860,200)");
+
+legend.selectAll("rect")
+	.data(color)
+	.enter().append("rect")
+	.attr("width", colorlegend.w)
+	.attr("height", colorlegend.h)
+	.attr("y", function(d,i) { return i*colorlegend.h; })
+	.attr("fill", function(d) { return d; });
+
+legend.selectAll("text")
+	.data([0].concat(range.concat([100])))
+	.enter().append("text")
+	.text(function(d) { return d+"%"; })
+	.attr("x", colorlegend.w+6)
+	.attr("y", function(d,i) { return (i)*colorlegend.h; })
+
+legend.append("text")
+.text("Education")
+.attr("x", colorlegend.w-60)
+.style("font-weight","bold")
+
+// input data
+d3.queue()
+	.defer(d3.json, "us.json")
+	.defer(d3.csv, "education.csv")
+	.defer(d3.csv, "education_details.csv")
+	.await(ready);
+
+function ready(error, us, education, education_details) {
+	if (error) throw error;
+
+	var data = {};
+	var ID = [];
+    
+    
+    
+	education.forEach(function(d) {
+        data[d.id] = {"name":d.name};
+        data[d.id]["rate"] = d.percent_educated;
+		ID.push(d.id);
+	})
+
+	education_details.forEach(function(d) {
+		if (ID.includes(d.id)) { // avoid error data[d.id] not found
+			data[d.id]["professional"] = d.qualified_professionals;
+			data[d.id]["highschool"] = d.high_school;
+			data[d.id]["lower"] = d.middle_school_or_lower;
+		}
+	})
+
+//tips
+tip = d3.tip()
+	.attr('class', 'd3-tip')
+	.offset([-10,-10])
+	.html(function(d) { 
+		var id = String(d.id);
+		if (ID.includes(id)) {
+			return "County: " + data[id]["name"] + "<br>Percentage Educated: " + data[id]["rate"] + "% <br>Qualified Professionals: " + data[id]["professional"] + "<br>High school graduates: " + data[id]["highschool"] + "<br>Middle school or lower graduates: " + data[id]["lower"];
+		}
+		else {return "Not Available"; }  ; 
+	});
+
+map.call(tip)
+
+map.append("g")
+	.attr("class", "counties")
+	.selectAll("path")
+	.data(topojson.feature(us, us.objects.counties).features)
+	.enter().append("path")
+	.attr("fill", function(d) { 
+		var id = String(d.id);
+		if (ID.includes(id)) {return colorScale(data[id]["rate"]);}
+		else {return colorScale(0); } 
+		})
+	.attr("d", path)
+	.on('mouseover', tip.show)
+	.on('mouseout', tip.hide);
+
+map.append("path")
+	.datum(topojson.mesh(us, us.objects.states, function(a, b) { return a.id !== b.id; }))
+	.attr("class", "states")
+	.attr("d", path);
+}
+
+</script>
+</body>
+</html>

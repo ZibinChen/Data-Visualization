@@ -1,0 +1,19 @@
+1. Ease to develop:
+Tableau: easiest. No coding skills required. It can be simply implemented following the instruction.
+R:relatively easy, as the package ggplot provides a comprehensive toolbox for data visualization. And R studio is more user-friendly. 
+D3: relatively difficult
+
+2. Ease to maintain the visualization (for developers)
+All of them are very easy to maintain
+
+3. Usability of visualization developed (for end users)
+D3 has great features for user interactions. It provides dynamic data visualization, illustrating the data with high dimensions. While R and Tableau is more like static visualizaiton.
+
+4. Scalability of visualization to “large” datasets
+D3 and R could handle large dataset well, while Tableau couldn't. 
+
+5. System requirements to run the visualization
+Tableau: Relatively high requirement. Need Tableau license.
+R:Relatively high requirement when using R studio and multiple package to ensure the code runs properly.
+D3: low requirement. Only need html to implement the code.
+ 

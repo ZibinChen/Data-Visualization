@@ -1,0 +1,6 @@
+a: 
+Wins+Nominations vs. IMDb Rating 
+The wins & nominations times perform better in separating bad and good movies. Generally, the Movies that have higher rating won or get nominated more times than those have bad rating. 
+
+c: 
+In this case, the scatters are crowded in the low-value region. Square-root-scale or log-scale could extend the scale for the low-value region, so that it provides a better visualization. Moreover, the both of the scales can be helpful when the data covers a large range of values.
